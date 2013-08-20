@@ -12,7 +12,21 @@ def prepare(func):
         return func(self, url, data, callback)
     return inner
 
+
 class BaseSuite(unittest.TestCase):
+    storage = None
+
+    @property
+    def storage(self):
+        return self.__class__.storage
+
+    def __init__(self, *args, **kwargs):
+        if not isinstance(self.__class__.storage, dict):
+            print "Setting Shared State Once"
+            self.__class__.storage = {}
+
+        super(BaseSuite, self).__init__(*args, **kwargs)
+
     @prepare
     def get(self, url, data=None, callback=None):
         return Api.fetch(url, "get", data, callback)
