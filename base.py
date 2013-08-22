@@ -12,6 +12,8 @@ def prepare(func):
         return func(self, url, data, callback)
     return inner
 
+from unittest.runner import TextTestResult
+TextTestResult.getDescription = lambda _, test: str(test.shortDescription() or test)
 
 class BaseSuite(unittest.TestCase):
     storage = None
