@@ -17,8 +17,8 @@ class Api(object):
                 method="POST"
             )
 
-            cached_val = ret["authtoken"]
-            setattr(cls, cache_key, cached_val)
+            cached_val = ret
+            setattr(cls, cache_key, ret)
 
         return cached_val
 

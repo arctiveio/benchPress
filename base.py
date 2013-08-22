@@ -46,10 +46,12 @@ class BaseSuite(unittest.TestCase):
 def authorize(email, password):
     def _check(func):
         def inner(self, *args, **kwargs):
-            authtoken = Api.authenticate(email, password)
-            setattr(self, "_authtoken", authtoken)
+            auth_val = Api.authenticate(email, password)
+            setattr(self, "_authtoken", auth_val["authtoken"])
+            setattr(self, "current_user_id", auth_val["user_id"])
             x = func(self, *args, **kwargs)
             delattr(self, "_authtoken")
+            delattr(self, "current_user_id")
             return x
         return inner
     return _check
