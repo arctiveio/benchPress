@@ -1,8 +1,6 @@
-import sys
 import unittest
+import settings
 from base import BaseSuite, authorize
-
-SIMINAR_ID = "137698486415898621018098"
 
 class SubscribeUser(BaseSuite):
     #@authorize("user1@siminars.com", "jaideep")
@@ -12,12 +10,12 @@ class SubscribeUser(BaseSuite):
     #        **{"bundle_id": BUNDLE_ID, "role": "students"})
     #    print x
 
-    @authorize("dev@simversity.com", "jaideep")
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
     def test_callcart(self):
-        data = {"siminar_id": SIMINAR_ID, "approve": "137698485339789688163702"}
+        data = {"siminar_id": settings.SIMINAR_ID, "approve": settings.STUDENT_ID}
         cart_ret = self.put(
             "siminar_users" ,
-            data=data, **{"siminar_id": SIMINAR_ID, "role": "students"})
+            data=data, **{"siminar_id": settings.SIMINAR_ID, "role": "students"})
 
 
 if __name__ == '__main__':

@@ -1,7 +1,6 @@
-import sys
 import unittest
+import settings
 from base import BaseSuite, authorize
-BUNDLE_ID = "137698573718494767147020"
 
 class SubscribeUser(BaseSuite):
     #@authorize("user1@siminars.com", "jaideep")
@@ -12,13 +11,12 @@ class SubscribeUser(BaseSuite):
     #        method="GET")
     #    print x
 
-    #@authorize("user1@gmail.com", "jaideep")
-    @authorize("dev@simversity.com", "jaideep")
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
     def test_unsubscribe_user(self):
         x = self.delete(
             "bundle_users",
-            data={"user_id": "137698485339789688163702"},
-            **{"bundle_id": BUNDLE_ID, "role": "students"})
+            data={"user_id": settings.STUDENT_ID},
+            **{"bundle_id": settings.BUNDLE_ID, "role": "students"})
 
 if __name__ == '__main__':
     unittest.main()

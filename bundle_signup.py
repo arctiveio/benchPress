@@ -1,20 +1,12 @@
-import sys
 import unittest
+import settings
 from base import BaseSuite, authorize
 
-BUNDLE_ID = "137698573718494767147020"
-
 class SubscribeUser(BaseSuite):
-    #@authorize("user1@siminars.com", "jaideep")
-    #def test_getbundle_user(self):
-    #    x = self.get(
-    #        "bundle_users",
-    #        **{"bundle_id": BUNDLE_ID, "role": "students"})
-    #    print x
 
-    @authorize("user1@gmail.com", "jaideep")
+    @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
     def test_callcart(self):
-        data = {"item_id": BUNDLE_ID, "user_id": "137698485339789688163702"}
+        data = {"item_id": BUNDLE_ID, "user_id": settings.STUDENT_ID}
         cart_ret = self.post(
             "cart" ,
             data=data)
