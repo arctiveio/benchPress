@@ -2,26 +2,12 @@ import settings
 import unittest
 from simtools.timezone import system_now
 from simtools.tcp_pipe import NewPipe
-from base import BaseSuite, authorize
+from core.runners import TrashSiminar
+from core.decorators import authorize
 
-class TestCart(BaseSuite):
+class TestCart(TrashSiminar):
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test11_createSiminar(self):
-        """
-        Create a Siminar
-        """
-        self.storage["instructor_id"] = self.current_user_id
-        ret = self.post(
-            "siminars",
-            data={
-                "title": "Siminar Created on %s" % system_now().strftime("%c")
-            })
-
-        self.storage["siminar_id"] = ret.get("created")
-        self.assertTrue(self.storage["siminar_id"] is not None)
-
-    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test12_mySiminars(self):
+    def test1_mySiminars(self):
         """Siminar should appear in mySiminars Unlaunched List"""
         ret = self.get("siminars")
         self.assertTrue(self.storage["siminar_id"] in ret["siminars"]["unlaunched"])
@@ -96,19 +82,6 @@ class TestCart(BaseSuite):
         """
         ret = self.get("siminars")
         self.assertTrue(self.storage["siminar_id"] in ret["siminars"]["facilitating"])
-
-    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test71_facilitatorDelete(self):
-        """Instructor Deletes the Siminar"""
-        siminar_id = self.storage["siminar_id"]
-        self.delete("agora_delete", data={"object_ids": [siminar_id]})
-
-    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test72_mySiminars(self):
-        """Siminar does not show in Instructor's Siminars."""
-        ret = self.get("siminars")
-        self.assertTrue(self.storage["siminar_id"] not in ret["siminars"]["unlaunched"])
-        self.assertTrue(self.storage["siminar_id"] not in ret["siminars"]["facilitating"])
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestCart)
