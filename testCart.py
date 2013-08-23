@@ -6,8 +6,11 @@ from base import BaseSuite, authorize
 
 class TestCart(BaseSuite):
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test1(self):
-        """Create a Siminar"""
+    def test11_createSiminar(self):
+        """
+        Create a Siminar
+        """
+        self.storage["instructor_id"] = self.current_user_id
         ret = self.post(
             "siminars",
             data={
@@ -18,13 +21,13 @@ class TestCart(BaseSuite):
         self.assertTrue(self.storage["siminar_id"] is not None)
 
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test2(self):
+    def test12_mySiminars(self):
         """Siminar should appear in mySiminars Unlaunched List"""
         ret = self.get("siminars")
         self.assertTrue(self.storage["siminar_id"] in ret["siminars"]["unlaunched"])
 
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test3(self):
+    def test2_addStep(self):
         """Add 2 Steps to this Siminar"""
         sret1 = self.post("steps", siminar_id=self.storage["siminar_id"])
         sret2 = self.post("steps", siminar_id=self.storage["siminar_id"])
@@ -32,14 +35,15 @@ class TestCart(BaseSuite):
         self.assertTrue(siminar["steps_num"] == 2)
 
     @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
-    def test4(self):
+    def test3_anonymousAccess(self):
         """Student cannot Access this unLaunched Siminar"""
+        self.storage["student_id"] = self.current_user_id
         with self.assertRaises(Exception):
             siminar = self.get("siminar", siminar_id=self.storage["siminar_id"])
 
 
     @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
-    def test5(self):
+    def test41_nobodyLaunchFail(self):
         """Student Cannot Launch this Siminar"""
         with self.assertRaises(Exception):
             self.put("siminar",
@@ -47,33 +51,60 @@ class TestCart(BaseSuite):
                      siminar_id=self.storage["siminar_id"])
 
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test6(self):
+    def test42_facilitatorLaunch(self):
         """Instructor Launched the Siminar"""
         self.put("siminar",
                  data={"changed_data": {"status": 12}},
                  siminar_id=self.storage["siminar_id"])
 
     @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
-    def test7(self):
+    def test5_nobodyAccess(self):
         """Siminars can be accessed by Non members"""
         siminar = self.get("siminar", siminar_id=self.storage["siminar_id"])
         self.assertTrue(siminar["siminar"]["user_is_nobody"], True)
 
     @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
-    def test8(self):
+    def test61_nonFacilitatorDeleteFailure(self):
         """Student Cannot delete this Siminar"""
         siminar_id = self.storage["siminar_id"]
         with self.assertRaises(Exception):
             self.delete("agora_delete", data={"object_ids": [siminar_id]})
 
+    @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
+    def test62_addToFacilitatorFailure(self):
+        """Instructor Deletes the Siminar"""
+        siminar_id = self.storage["siminar_id"]
+        with self.assertRaises(Exception):
+            self.post("siminar_users",
+                      data={"user_id": self.storage["student_id"]},
+                      siminar_id=siminar_id,
+                      role="instructors")
+
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test9(self):
+    def test63_addToFacilitators(self):
+        """Instructor Adds User to the Siminar"""
+        siminar_id = self.storage["siminar_id"]
+        self.post("siminar_users",
+                  data={"user_id": self.storage["student_id"]},
+                  siminar_id=siminar_id,
+                  role="instructors")
+
+    @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
+    def test64_studentSiminars(self):
+        """
+        Siminar shows in Students's Facilitating Siminars.
+        """
+        ret = self.get("siminars")
+        self.assertTrue(self.storage["siminar_id"] in ret["siminars"]["facilitating"])
+
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test71_facilitatorDelete(self):
         """Instructor Deletes the Siminar"""
         siminar_id = self.storage["siminar_id"]
         self.delete("agora_delete", data={"object_ids": [siminar_id]})
 
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test91(self):
+    def test72_mySiminars(self):
         """Siminar does not show in Instructor's Siminars."""
         ret = self.get("siminars")
         self.assertTrue(self.storage["siminar_id"] not in ret["siminars"]["unlaunched"])
@@ -81,5 +112,5 @@ class TestCart(BaseSuite):
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestCart)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.TextTestRunner(descriptions=True, verbosity=2).run(suite)
 
