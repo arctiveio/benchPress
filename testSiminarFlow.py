@@ -2,9 +2,9 @@ import settings
 import unittest
 from simtools.timezone import system_now
 from simtools.tcp_pipe import NewPipe
-from core.runners import ExistingSiminar
+from core.runners import Reuse
 
-class TestSiminarFlow(ExistingSiminar):
+class TestSiminarFlow(Reuse):
     def test_debug(self):
         print "Testing"
 

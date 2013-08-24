@@ -10,15 +10,25 @@ PATH = abspath(dirname(__file__))
 sys.path.append(join(PATH, '..'))
 import settings
 
-def parseSiminarId():
-    parser = argparse.ArgumentParser(description='Testing Parameters.')
-    parser.add_argument('--siminar_id', dest="siminar_id", type=str, nargs=1,
-                        help='SiminarID to consume in test cases.')
-    args = parser.parse_args()
-    if not args.siminar_id:
-        raise Exception("--siminar_id not found. Check -h for usage.")
+parser = argparse.ArgumentParser(description='Testing Parameters.')
+parser.add_argument('--runner', dest="runner", type=str,
+                    choices=['trash', 'keep', 'reuse'],
+                    help='Test Runner to be Used.')
 
-class TrashSiminar(BaseSuite):
+parser.add_argument('--siminar_id', dest="siminar_id", type=str, nargs=1,
+                    help='SiminarID to consume in test cases.')
+
+cli_args = parser.parse_args()
+
+class RunnerBase(BaseSuite):
+    @classmethod
+    def prepare(cls, func):
+        if not isinstance(cls.storage, dict):
+            print "Preparing Runner. This should not be called again."
+            cls.storage = {}
+            if callable(func):
+                func(cls)
+
     @classmethod
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
     def createSiminar(cls):
@@ -40,23 +50,35 @@ class TrashSiminar(BaseSuite):
             siminar_id = self.storage["siminar_id"]
             self.delete("agora_delete", data={"object_ids": [siminar_id]})
 
-    @classmethod
-    def setUpClass(self):
-        self.createSiminar()
-
-    @classmethod
-    def tearDownClass(self):
-        self.deleteSiminar()
-
-class ExistingSiminar(BaseSuite):
     def __init__(self, *args, **kwargs):
-        if not isinstance(self.__class__.storage, dict):
-            print "Setting Shared State Once"
-            self.__class__.storage = {"siminar_id": parseSiminarId()}
+        def first_init(cls):
+            runner = cli_args.runner or getattr(self, "__runner__", None)
+            if runner == "trash":
+                setattr(cls, "setUpClass", cls.createSiminar)
+                setattr(cls, "tearDownClass", cls.deleteSiminar)
 
-        super(BaseSuite, self).__init__(*args, **kwargs)
+            elif runner == "keep":
+                setattr(cls, "setUpClass", cls.createSiminar)
 
-class KeepSiminar(BaseSuite):
-    @classmethod
-    def tearDownClass(self):
-        print "KeepSimianr tearDown does not erase the Siminar."
+            elif runner == "reuse":
+                if cli_args.siminar_id:
+                    cls.storage["siminar_id"] = cli_args.siminar_id
+                else:
+                    raise Exception("Must provide --siminar_id with --runner reuse")
+            else:
+                raise Exception("Unspecified Runner. Check -h for usage")
+
+        self.prepare(first_init)
+        super(RunnerBase, self).__init__(*args, **kwargs)
+
+class Dynamic(RunnerBase):
+    __runner__ = "dynamic"
+
+class Trash(RunnerBase):
+    __runner__ = "trash"
+
+class Reuse(RunnerBase):
+    __runner__ = "reuse"
+
+class Keep(RunnerBase):
+    __runner__ = "keep"
