@@ -2,10 +2,10 @@ import settings
 import unittest
 from simtools.timezone import system_now
 from simtools.tcp_pipe import NewPipe
-from core.runners import TrashSiminar
+from core.runners import Trash
 from core.decorators import authorize
 
-class TestCart(TrashSiminar):
+class TestCart(Trash):
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
     def test1_mySiminars(self):
         """Siminar should appear in mySiminars Unlaunched List"""
