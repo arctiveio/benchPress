@@ -15,7 +15,7 @@ parser.add_argument('--runner', dest="runner", type=str,
                     choices=['trash', 'keep', 'reuse'],
                     help='Test Runner to be Used.')
 
-parser.add_argument('--siminar_id', dest="siminar_id", type=str, nargs=1,
+parser.add_argument('--siminar_id', dest="siminar_id", type=str,
                     help='SiminarID to consume in test cases.')
 
 cli_args = parser.parse_args()

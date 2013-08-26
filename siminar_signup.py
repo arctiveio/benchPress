@@ -1,19 +1,14 @@
 import unittest
 import settings
-from base import BaseSuite, authorize
+from core.runners import TrashSiminar
+from core.decorators import authorize
 from simtools.timezone import system_now
 
-class SubscribeUser(BaseSuite):
+class SubscribeUser(TrashSiminar):
 
-    #def user_approve(self):
-    #    data = {"siminar_id": settings.SIMINAR_ID, "approve": settings.STUDENT_ID}
-    #    cart_ret = self.put(
-    #        "siminar_users" ,
-    #        data=data, **{"siminar_id": settings.SIMINAR_ID, "role": "students"})
-
-    #@authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    #def test_user_approve(self):
-    #    pass
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test11_create_payment_card():
+        pass
 
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
     def test_create_siminar(self):
@@ -24,16 +19,15 @@ class SubscribeUser(BaseSuite):
             })
 
         self.storage["siminar_id"] = ret.get("created")
+        print "Created Siminar %s" % self.storage["siminar_id"]
         self.assertTrue(self.storage["siminar_id"] is not None)
 
-    #@authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    #def test_get_siminar(self):
-    #    ret = self.get(
-    #        "siminar" ,
-    #        **{"siminar_id": self.storage["siminar_id"]})
-
-    #    self.storage["siminar"] = ret.get("siminar")
-    #    self.assertEqual(self.storage["siminar_id"], ret["siminar"]["_id"])
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test_launch_siminar(self):
+        ret = self.put(
+            "siminar" ,
+            data={"changed_data": {"status": 12}},
+            **{"siminar_id": self.storage["siminar_id"]})
 
     @authorize(settings.STUDENT_EMAIL, settings.STUDENT_PASSWORD)
     def test_user_signup(self):
@@ -49,6 +43,24 @@ class SubscribeUser(BaseSuite):
 
         self.assertEqual(self.storage["siminar_id"], ret.get("siminar_id"))
         self.assertTrue(ret.get("paid"))
+
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test_get_siminar(self):
+        ret = self.get(
+            "siminar" ,
+            **{"siminar_id": self.storage["siminar_id"]})
+
+        self.assertEqual(self.storage["siminar_id"], ret["siminar"]["_id"])
+        siminar = ret.get("siminar")
+        if siminar.get("is_participation_moderated"):
+            print "Participation Moderated , so approving user"
+
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def approve_user(self):
+        data = {"siminar_id": self.storage["siminar_id"], "approve": settings.STUDENT_ID}
+        ret = self.put(
+            "siminar_users" ,
+            data=data, **{"siminar_id": self.storage["siminar_id"], "role": "students"})
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SubscribeUser)
