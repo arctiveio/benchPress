@@ -9,12 +9,15 @@ TextTestResult.getDescription = lambda _, test: \
 
 def prepare(func):
     def inner(self, url, data=None, callback=None, **kwargs):
+        if not isinstance(data, dict):
+            data = {}
+
         url = Api.make_url(url, **kwargs)
+
         authtoken = getattr(self, "_authtoken", None)
         if authtoken:
-            if not data:
-                data = {}
             data["authtoken"] = authtoken
+
         return func(self, url, data, callback)
     return inner
 
