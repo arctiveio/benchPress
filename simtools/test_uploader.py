@@ -7,6 +7,7 @@ from simtools.uploader.external_tools import guess_content_type
 class TestToken(unittest.TestCase):
     valid_video = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
     invalid_video = "http://google.com"
+    invalid_video_without_protocol = "google.com"
     non_existent_url = "http://www.promod.jhg/"
 
     tmp_path = "/tmp/hello.txt"
@@ -19,6 +20,10 @@ class TestToken(unittest.TestCase):
     def test_invalid_video(self):
         with self.assertRaises(UploaderException):
             validate_url(self.invalid_video, "video")
+
+    def test_invalid_video_without_protocol(self):
+        with self.assertRaises(UploaderException):
+            validate_url(self.invalid_video_without_protocol, "video")
 
     def test_valid_video(self):
         self.assertTrue(validate_url(self.valid_video, "video"))
