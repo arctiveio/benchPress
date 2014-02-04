@@ -1,10 +1,13 @@
+import settings
 from functools import partial
 from simtools.school import make_url
 from simtools.uhttpclient import BlockingHTTPClient
 
+APIHOSTS = getattr(settings, 'APIHOSTS')
+
 class Api(object):
     urls = None
-    conn = BlockingHTTPClient("/tmp/api.sock")
+    conn = BlockingHTTPClient(APIHOSTS)
 
     @classmethod
     def authenticate(cls, email, password):
