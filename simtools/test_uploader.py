@@ -53,5 +53,12 @@ class TestToken(unittest.TestCase):
             guess_content_type(self.tmp_path),
             self.tmp_content_type)
 
+    def test_patch_play_icon(self):
+        pass
+
 if __name__ == '__main__':
+    import logging
+    FORMAT = '%(asctime)s %(filename)-8s:%(lineno)s [%(levelname)s] %(message)s'
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+
     unittest.main(verbosity=2)
