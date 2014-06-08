@@ -2,6 +2,15 @@ from functools import partial
 from simtools.school import make_url
 from simtools.uhttpclient import BlockingHTTPClient
 
+def has_urls(func):
+    def inner(cls, *args, **kwargs):
+        if not cls.urls:
+            cls.get_urls()
+
+        return func(cls, *args, **kwargs)
+    return inner
+
+
 class Api(object):
     urls = None
     conn = BlockingHTTPClient("/tmp/api.sock")
@@ -14,6 +23,7 @@ class Api(object):
         return (ret.get("data") or {}).get("data")
 
     @classmethod
+    @has_urls
     def make_url(cls, name, get_args=None, **urlargs):
         url = cls.urls.get(name)
         if not url:
@@ -37,6 +47,3 @@ class Api(object):
         if not cls.urls:
             ret = cls.fetch("/urls", method="GET", data={"apitoken":2})
             cls.urls = ret.get("urls")
-        return cls.urls
-
-Api.get_urls()
