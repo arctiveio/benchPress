@@ -1,6 +1,13 @@
 import settings
-from core.runners import Trash
+from core.runners import Trash, CLI
 from core.decorators import authorize
+
+CLI.add_argument('--plan',
+                 dest="plan_id",
+                 required=True,
+                 type=str,
+                 help='BillPlanID to be used')
+
 
 class TestCommunity(Trash):
     community_id = None
@@ -34,7 +41,7 @@ class TestCommunity(Trash):
         ret = self.post("communities", {
             "title": "Community Open",
             "plan_type": "open",
-            "plan_id": "140031151227562517735425"
+            "plan_id": self.cli_args.plan_id
         })
 
         self.__class__.community_id = ret["created"]
@@ -52,21 +59,6 @@ class TestCommunity(Trash):
     def test_5_get_community(self):
         community = self.get("community", community_id=self.community_id)
         self.assertEqual(community["community"]["_id"], self.community_id)
-
-    #@authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    #def test_two_create_open_community(self):
-    #    print self.post("communities", {
-    #        "title": "Community Test1", "plan_type": "retail"})
-
-
-    #@authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    #def test_two_create_open_community(self):
-    #    print self.post("communities", {"title": "Community Test1", "plan_type": "retail"})
-
-
-    #@authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    #def test_two(self):
-    #    pass
 
 if __name__ == '__main__':
     TestCommunity.go_run()
