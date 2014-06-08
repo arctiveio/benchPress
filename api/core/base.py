@@ -43,7 +43,7 @@ class BaseSuite(unittest.TestCase):
         super(BaseSuite, self).__init__(*args, **kwargs)
 
     @classmethod
-    def get(cls, url, url_args=None, data=None, **kwargs):
+    def get(cls, url, data=None, **kwargs):
         return cls._fetch(url, "get", data, **kwargs)
 
     @classmethod
