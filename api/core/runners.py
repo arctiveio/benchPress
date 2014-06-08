@@ -3,12 +3,11 @@ from simtools.timezone import system_now
 
 from .base import BaseSuite
 
-parser = argparse.ArgumentParser(description='Testing Parameters.')
-parser.add_argument('--runner', dest="runner", type=str,
+CLI = argparse.ArgumentParser(description='Testing Parameters.')
+CLI.add_argument('--runner', dest="runner", type=str,
                     choices=["trash", "keep"],
                     help='Test Runner to be Used.')
 
-cli_args = parser.parse_args()
 
 class RunnerBase(BaseSuite):
     @classmethod
@@ -37,8 +36,10 @@ class RunnerBase(BaseSuite):
                 func(cls)
 
     def __init__(self, *args, **kwargs):
+        self.cli_args = CLI.parse_args()
+
         def first_init(cls):
-            runner = cli_args.runner or getattr(self, "__runner__", None)
+            runner = self.cli_args.runner or getattr(self, "__runner__", None)
             setattr(cls, "__runner__", runner)
 
             if runner == "trash":
