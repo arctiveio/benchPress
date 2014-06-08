@@ -42,12 +42,6 @@ try:
 except ImportError:
     curses = None
 
-# Logger objects for internal tornado use
-access_log = logging.getLogger("tornado.access")
-app_log = logging.getLogger("tornado.application")
-gen_log = logging.getLogger("tornado.general")
-
-
 def _stderr_supports_color():
     color = False
     if curses and hasattr(sys.stderr, 'isatty') and sys.stderr.isatty():
@@ -183,4 +177,8 @@ def get_logger(name):
 
     logger = logging.getLogger(name)
     logger.addHandler(channel)
+
+    app_log = logging.getLogger("tornado.application")
+    app_log.addHandler(channel)
+
     return logger
