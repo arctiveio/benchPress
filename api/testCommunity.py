@@ -60,5 +60,27 @@ class TestCommunity(Trash):
         community = self.get("community", community_id=self.community_id)
         self.assertEqual(community["community"]["_id"], self.community_id)
 
+
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test_6_get_plan_communities(self):
+        ret = self.get("communities", plan_id=self.cli_args.plan_id)
+
+        communities = [x["_id"] for x in ret["communities"]]
+        self.assertIn(self.community_id, communities)
+
+
+    #@authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    #def test_6_add_content_to_community(self):
+    #    content = {
+    #        "title": "Community Content 1.... See haa ",
+    #        "body": "Hello World",
+    #        "content_type": "post",
+    #        "topic_id": self.community_id
+    #    }
+
+    #    ret = self.post("jontents", data=content)
+    #    self.__class__.jontent_id = ret["created"]
+
+
 if __name__ == '__main__':
     TestCommunity.go_run()
