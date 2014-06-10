@@ -8,6 +8,10 @@ CLI.add_argument('--plan',
                  type=str,
                  help='BillPlanID to be used')
 
+CLI.add_argument('--siminar',
+                 dest="siminar_id",
+                 type=str,
+                 help='Siminar to be used')
 
 class TestCommunity(Trash):
     community_id = None
@@ -121,6 +125,22 @@ class TestCommunity(Trash):
 
         community = self.get("community", community_id=self.community_id)
         self.assertEqual(community["community"]["title"], new_title)
+
+
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test_add_siminar_to_community(self):
+        if not self.cli_args.siminar_id:
+            self.logger.error("need --siminar to run")
+            return
+
+        siminar_id = self.cli_args.siminar_id
+        self.post("siminar_communities",
+                  {"community_id": self.community_id},
+                  siminar_id=siminar_id)
+
+        siminar = self.get("siminar", siminar_id=siminar_id)
+        self.assertEqual(siminar["siminar"]["community_ids"], [self.community_id])
+
 
 
 if __name__ == '__main__':
