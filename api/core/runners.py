@@ -23,8 +23,9 @@ class RunnerBase(BaseSuite):
             "Deleting all activities saved in this test run. %s" % cls.activities)
 
         for authtoken, _ids in cls.activities.iteritems():
+            _ids.reverse()
             cls.delete("agora_delete",
-                       {"object_ids": list(_ids), "authtoken": authtoken})
+                       {"object_ids": _ids, "authtoken": authtoken})
 
 
     @classmethod

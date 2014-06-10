@@ -15,7 +15,7 @@ class BaseSuite(unittest.TestCase):
     logger = get_logger("UnitTestingLogger")
     storage = None
     current_user_id = None
-    activities = defaultdict(set)
+    activities = defaultdict(list)
 
     @classmethod
     def _fetch(cls, url, method, data=None, **kwargs):
@@ -61,7 +61,8 @@ class BaseSuite(unittest.TestCase):
                     "Cannot not cleanup on exit" % url)
             else:
                 authtoken = getattr(cls, "_authtoken", None)
-                cls.activities[authtoken].add(_id)
+                if _id not in cls.activities[authtoken]:
+                    cls.activities[authtoken].append(_id)
 
         return ret
 
@@ -86,7 +87,8 @@ class BaseSuite(unittest.TestCase):
             setattr(cls, cache_key, cached_val)
 
         if cls.__runner__ == "trash":
-            cls.activities[cached_val["authtoken"]].add(cached_val["authtoken"])
+            if cached_val["authtoken"] not in cls.activities[cached_val["authtoken"]]:
+                cls.activities[cached_val["authtoken"]].append(cached_val["authtoken"])
 
         setattr(cls, "_authtoken", cached_val["authtoken"])
         setattr(cls, "current_user_id", cached_val["user_id"])
