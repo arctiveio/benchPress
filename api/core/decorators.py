@@ -9,6 +9,10 @@ def authorize(email, password):
     return _check
 
 def signature(params):
+    """
+    Looks for parameters in Command Line Arguments.
+    If CLI arg is missing. Runner will log an error and mark the test as OK.
+    """
     def _check(func):
         def inner(self, *args, **kwargs):
             for key in params:
