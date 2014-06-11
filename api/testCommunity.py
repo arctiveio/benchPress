@@ -1,6 +1,6 @@
 import settings
 from core.runners import Trash, CLI
-from core.decorators import authorize
+from core.decorators import authorize, signature
 
 CLI.add_argument('--plan',
                  dest="plan_id",
@@ -127,15 +127,35 @@ class TestCommunity(Trash):
         self.assertEqual(community["community"]["title"], new_title)
 
 
+    @signature(params=["siminar_id"])
     @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
-    def test_add_siminar_to_community(self):
-        if not self.cli_args.siminar_id:
-            self.logger.error("need --siminar to run")
-            return
+    def test_51_add_siminar_to_community_fail(self):
+        with self.assertRaises(Exception) as cm:
+            siminar_id = self.cli_args.siminar_id
+            self.post("siminar_communities",
+                      {"community_id": self.community_id},
+                      siminar_id=siminar_id)
 
+        self.assertIn("signup_method", cm.exception.message)
+
+    @signature(params=["siminar_id"])
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test_52_add_siminar_to_community_fail(self):
+        with self.assertRaises(Exception) as cm:
+            siminar_id = self.cli_args.siminar_id
+            self.post("siminar_communities",
+                      {"community_id": self.community_id, "signup_method": "yes"},
+                      siminar_id=siminar_id)
+
+        self.assertIn("yes", cm.exception.message)
+
+
+    @signature(params=["siminar_id"])
+    @authorize(settings.INSTRUCTOR_EMAIL, settings.INSTRUCTOR_PASSWORD)
+    def test_53_add_siminar_to_community(self):
         siminar_id = self.cli_args.siminar_id
         self.post("siminar_communities",
-                  {"community_id": self.community_id},
+                  {"community_id": self.community_id, "signup_method": "signup"},
                   siminar_id=siminar_id)
 
         siminar = self.get("siminar", siminar_id=siminar_id)
